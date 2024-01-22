@@ -57,13 +57,13 @@ func (a *analysis) checkTitle(line string) bool {
 }
 
 // 将ini配置文件反序列化赋值到结构体，返回结构体指针和error
-func UnMarshalWithIniPath(ini string, any interface{}) error {
+func UnMarshalWithIniPath(ini string) (*Config, error) {
 	as := analysis{}
 	c := Config{}
 	file, err := os.Open(ini)
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
 	defer file.Close()
 
@@ -87,7 +87,7 @@ func UnMarshalWithIniPath(ini string, any interface{}) error {
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
-	return nil
+	return &c, nil
 }
