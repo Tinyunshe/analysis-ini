@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -15,6 +16,10 @@ type Config struct {
 }
 
 type analysis struct{}
+
+func fieldAndValue(s []string) (f string, v string) {
+	return s[0], s[1]
+}
 
 func (a *analysis) reflectSlice(lineS []string, config *Config) {
 	// 如果不包含","，认为不是切片值就退出
@@ -45,6 +50,29 @@ func (a *analysis) reflectSlice(lineS []string, config *Config) {
 			fieldOfSlice.Set(fieldOfSliceValue)
 		}
 	}
+}
+
+func (a *analysis) reflectInt(lineS []string, config *Config) {
+	valueOfINI, err := strconv.Atoi(lineS[1])
+	if err != nil {
+		return
+	}
+	fieldOfINI := lineS[0]
+	c := reflect.TypeOf(*config)
+	for i := 0; i < c.NumField(); i++ {
+		field := c.Field(i)
+		tag := field.Tag.Get("ini")
+		if tag == fieldOfINI {
+			v := reflect.ValueOf(config)
+			fieldOfSlice := v.Elem().FieldByName(field.Name)
+			fieldOfSliceValue := reflect.ValueOf(uint(valueOfINI))
+			fieldOfSlice.Set(fieldOfSliceValue)
+		}
+	}
+}
+
+func (a *analysis) reflectString(lineS []string, config *Config) {
+
 }
 
 // 检查是否为[]标题
@@ -83,6 +111,8 @@ func UnMarshalWithIniPath(ini string) (*Config, error) {
 		// fmt.Println(lineS)
 		// 分析配置文件中所有的切片
 		as.reflectSlice(lineS, &c)
+		as.reflectInt(lineS, &c)
+		as.reflectString(lineS, &c)
 
 	}
 	if err := scanner.Err(); err != nil {
