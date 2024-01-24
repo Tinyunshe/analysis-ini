@@ -13,4 +13,5 @@ func main() {
 		return
 	}
 	fmt.Printf("%#v\n", config)
+	fmt.Printf("%v\n", config)
 }
